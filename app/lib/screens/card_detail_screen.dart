@@ -38,6 +38,28 @@ class CardDetailScreen extends ConsumerWidget {
               },
             ),
           ),
+          Semantics(
+            label: 'その他のメニュー',
+            button: true,
+            child: PopupMenuButton<_DetailMenuAction>(
+              tooltip: 'その他',
+              onSelected: (action) async {
+                if (action == _DetailMenuAction.delete) {
+                  await _confirmAndDelete(context, ref);
+                }
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: _DetailMenuAction.delete,
+                  child: ListTile(
+                    leading: Icon(Icons.delete_outline),
+                    title: Text('削除'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       body: async.when(
@@ -98,7 +120,48 @@ class CardDetailScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Future<void> _confirmAndDelete(BuildContext context, WidgetRef ref) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('このカードを削除しますか？'),
+        content: const Text('削除すると元に戻せません。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('削除'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    try {
+      final useCase = await ref.read(deleteCardUseCaseProvider.future);
+      await useCase.execute(cardId);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('削除に失敗しました: $e')),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
+    ref.invalidate(cardListProvider);
+    Navigator.of(context).pop();
+  }
 }
+
+enum _DetailMenuAction { delete }
 
 // ---------------------------------------------------------------------------
 // Sub-widgets

@@ -22,6 +22,7 @@ import '../services/qr_service.dart';
 import '../services/sns_launcher_service.dart';
 import '../services/storage_service.dart';
 import '../usecases/capture_card_usecase.dart';
+import '../usecases/delete_card_usecase.dart';
 import '../usecases/manual_entry_usecase.dart';
 import '../usecases/save_card_usecase.dart';
 import '../usecases/search_cards_usecase.dart';
@@ -143,6 +144,15 @@ final updateCardUseCaseProvider = FutureProvider<UpdateCardUseCase>((ref) async 
     cardRepository: cardRepo,
     tagRepository: tagRepo,
     eventRepository: eventRepo,
+    storage: ref.watch(storageServiceProvider),
+  );
+});
+
+final deleteCardUseCaseProvider =
+    FutureProvider<DeleteCardUseCase>((ref) async {
+  final cardRepo = await ref.watch(cardRepositoryProvider.future);
+  return DeleteCardUseCase(
+    cardRepo: cardRepo,
     storage: ref.watch(storageServiceProvider),
   );
 });

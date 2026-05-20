@@ -59,11 +59,18 @@ class _CardImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final file = File(path);
+    final bg = Theme.of(context).colorScheme.surfaceContainerHighest;
     if (file.existsSync()) {
-      return Image.file(file, fit: BoxFit.cover);
+      // Use contain (not cover) so portrait card photos aren't cropped.
+      // Background fills the letterbox area when the image aspect ratio
+      // doesn't match the tile's 91:55.
+      return ColoredBox(
+        color: bg,
+        child: Image.file(file, fit: BoxFit.contain),
+      );
     }
     return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      color: bg,
       child: const Center(
         child: Icon(Icons.image_not_supported_outlined, size: 32),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../core/providers.dart';
+import '../services/service_models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/card_gallery_tile.dart';
 import '../widgets/card_tile.dart';
@@ -104,7 +105,22 @@ class HomeScreen extends ConsumerWidget {
 
     final bytes = await picked.readAsBytes();
     final useCase = ref.read(captureCardUseCaseProvider);
-    final draft = await useCase.execute(bytes);
+
+    if (!context.mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const _AnalyzingDialog(),
+    );
+
+    final CardDraft draft;
+    try {
+      draft = source == ImageSource.gallery
+          ? await useCase.executeWithoutCorrection(bytes)
+          : await useCase.execute(bytes);
+    } finally {
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
     if (!context.mounted) return;
 
     await Navigator.of(context).pushNamed('/capture/review', arguments: draft);
@@ -282,6 +298,38 @@ class _ChoiceTile extends StatelessWidget {
         title: Text(title, style: theme.textTheme.titleMedium),
         subtitle: Text(subtitle, style: theme.textTheme.bodySmall),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _AnalyzingDialog extends StatelessWidget {
+  const _AnalyzingDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      child: Dialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.s6,
+            vertical: AppSpacing.s5,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+              const SizedBox(width: AppSpacing.s4),
+              Text('読み取り中…', style: Theme.of(context).textTheme.titleSmall),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -65,14 +65,18 @@ void main() {
 
       // Also copy the corrected JPEG into the app's external dir so the
       // host can pull it for visual inspection via `adb pull`.
-      final externalDir = await getExternalStorageDirectory();
-      if (externalDir != null) {
-        final outDir = Directory(p.join(externalDir.path, 'corrected_output'));
-        if (!outDir.existsSync()) outDir.createSync(recursive: true);
-        final destPath = p.join(outDir.path, 'corrected_$basename');
-        await correctedFile.copy(destPath);
-        // ignore: avoid_print
-        print('  pull-out path : $destPath');
+      // iOS doesn't support getExternalStorageDirectory — skip on non-Android.
+      if (Platform.isAndroid) {
+        final externalDir = await getExternalStorageDirectory();
+        if (externalDir != null) {
+          final outDir =
+              Directory(p.join(externalDir.path, 'corrected_output'));
+          if (!outDir.existsSync()) outDir.createSync(recursive: true);
+          final destPath = p.join(outDir.path, 'corrected_$basename');
+          await correctedFile.copy(destPath);
+          // ignore: avoid_print
+          print('  pull-out path : $destPath');
+        }
       }
 
       // ignore: avoid_print

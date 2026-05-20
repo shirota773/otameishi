@@ -48,7 +48,19 @@ class CaptureCardUseCase {
       }
     }
 
-    final encoded = await _imageProcessing.encode(pipeline);
+    return _encodeAndOcr(pipeline);
+  }
+
+  /// Gallery-import variant: skips perspective correction / denoise because
+  /// the source image is assumed to be a finished photo (cropped, lit) the
+  /// user picked from their library.  Other apps do correction better; ours
+  /// is for archiving already-good images.  Runs encode → save → OCR only.
+  Future<CardDraft> executeWithoutCorrection(Uint8List rawBytes) {
+    return _encodeAndOcr(rawBytes);
+  }
+
+  Future<CardDraft> _encodeAndOcr(Uint8List bytes) async {
+    final encoded = await _imageProcessing.encode(bytes);
     final imagePath = await _storage.saveCardImage(
       encoded.bytes,
       format: encoded.format,

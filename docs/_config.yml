@@ -1,0 +1,8 @@
+title: ヲタ名刺 / otameishi
+description: 推し活イベント名刺管理アプリ (local-first card archive for fan events)
+theme: jekyll-theme-cayman
+
+exclude:
+  - design/
+  - release-notes/
+  - DEVELOPMENT.md

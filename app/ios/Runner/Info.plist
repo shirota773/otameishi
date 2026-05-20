@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>名刺を撮影して取り込むために使用します</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>保存済みの名刺画像を読み込むために使用します</string>
 	<key>UIApplicationSceneManifest</key>
